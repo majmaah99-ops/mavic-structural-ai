@@ -1,0 +1,415 @@
+"""
+rules_engine.py - محرك قواعد التحقق الإنشائي (MAVIC structural rules engine)
+
+Design
+------
+* ``Violation``   : pydantic model describing one finding (bilingual).
+* ``Rule``        : abstract base class. Each rule declares ``rule_id``,
+                    ``severity``, ``sbc_reference`` and implements ``validate``.
+* ``RulesEngine`` : runs a list of rules and returns violations sorted
+                    CRITICAL > HIGH > MEDIUM (then by rule_id, then element_id).
+
+Arabic message template (mandatory for every rule):
+    "[نوع العنصر] [ID] في الطابق [X]: [المشكلة المحددة] — القيمة الفعلية [Y]، الحد المطلوب [Z]."
+
+Requires pydantic v2.
+"""
+from __future__ import annotations
+
+import json
+import math
+import sys
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any, ClassVar
+
+from pydantic import BaseModel, field_validator
+
+Model = dict[str, Any]
+
+SEVERITY_RANK: dict[str, int] = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}
+
+
+# ----------------------------------------------------------------------------
+# Violation
+# ----------------------------------------------------------------------------
+class Violation(BaseModel):
+    rule_id: int
+    severity: str
+    element_id: str
+    element_type: str
+    message_ar: str
+    message_en: str
+    sbc_reference: str
+    suggested_fix_ar: str
+    suggested_fix_en: str
+
+    @field_validator("severity")
+    @classmethod
+    def _severity_must_be_known(cls, value: str) -> str:
+        if value not in SEVERITY_RANK:
+            raise ValueError(f"severity must be one of {sorted(SEVERITY_RANK)}, got {value!r}")
+        return value
+
+
+# ----------------------------------------------------------------------------
+# Helpers
+# ----------------------------------------------------------------------------
+def _seismic_zone(model: Model) -> int:
+    return int(model["project"]["seismic_zone"])
+
+
+def _require(element: dict[str, Any], key: str, kind: str) -> Any:
+    """Fail loudly when a mandatory field is missing (no silent defaults)."""
+    if element.get(key) is None:
+        raise ValueError(f"{kind} {element.get('id', '?')}: missing required field '{key}'")
+    return element[key]
+
+
+def _location_of_missing_end(beam: dict[str, Any], columns: dict[str, dict[str, Any]]):
+    """Estimate (x, y) of a missing beam end from the surviving end + span."""
+    start = columns.get(beam.get("start_column"))
+    end = columns.get(beam.get("end_column"))
+    span = float(beam.get("span_m", 0))
+    if start and not end:
+        x, y, sign = float(start["x"]), float(start["y"]), 1
+    elif end and not start:
+        x, y, sign = float(end["x"]), float(end["y"]), -1
+    else:
+        return None
+    if str(beam.get("direction", "X")).upper() == "X":
+        x += sign * span
+    else:
+        y += sign * span
+    return round(x, 2), round(y, 2)
+
+
+# ----------------------------------------------------------------------------
+# Rule base class
+# ----------------------------------------------------------------------------
+class Rule(ABC):
+    rule_id: ClassVar[int]
+    severity: ClassVar[str]
+    sbc_reference: ClassVar[str]
+
+    def __init__(self) -> None:
+        for attr in ("rule_id", "severity", "sbc_reference"):
+            if not hasattr(type(self), attr):
+                raise TypeError(f"{type(self).__name__} must define class attribute '{attr}'")
+
+    @abstractmethod
+    def validate(self, model: Model) -> list[Violation]:
+        """Return every violation of this rule found in ``model``."""
+
+    @staticmethod
+    def msg_ar(etype: str, eid: str, floor: Any, issue: str, actual: str, required: str) -> str:
+        return f"{etype} {eid} في الطابق {floor}: {issue} — القيمة الفعلية {actual}، الحد المطلوب {required}."
+
+    @staticmethod
+    def msg_en(etype: str, eid: str, floor: Any, issue: str, actual: str, required: str) -> str:
+        return f"{etype} {eid} on floor {floor}: {issue} — actual {actual}, required {required}."
+
+    def make(self, element_id: str, element_type: str, message_ar: str, message_en: str,
+             fix_ar: str, fix_en: str) -> Violation:
+        return Violation(
+            rule_id=self.rule_id,
+            severity=self.severity,
+            element_id=element_id,
+            element_type=element_type,
+            message_ar=message_ar,
+            message_en=message_en,
+            sbc_reference=self.sbc_reference,
+            suggested_fix_ar=fix_ar,
+            suggested_fix_en=fix_en,
+        )
+
+
+# ----------------------------------------------------------------------------
+# Rules
+# ----------------------------------------------------------------------------
+class OrphanColumnReferenceRule(Rule):
+    """Rule 1 - every beam must connect to columns that exist in the model."""
+
+    rule_id = 1
+    severity = "CRITICAL"
+    sbc_reference = "SBC 304-18 Ch.4 (load path continuity)"
+
+    def validate(self, model: Model) -> list[Violation]:
+        columns = {c["id"]: c for c in model["columns"]}
+        out: list[Violation] = []
+        for beam in model["beams"]:
+            refs = (beam.get("start_column"), beam.get("end_column"))
+            orphans = [str(r) for r in refs if r not in columns]
+            if not orphans:
+                continue
+            orphan_txt = "، ".join(orphans)
+            floor = beam["floor"]
+            loc = _location_of_missing_end(beam, columns)
+            if loc:
+                fix_ar = (f"أضف عموداً في الموقع (X={loc[0]}, Y={loc[1]}) بالطابق {floor}، "
+                          f"أو أعد توصيل العارضة بعمود موجود.")
+                fix_en = (f"Add a column at (X={loc[0]}, Y={loc[1]}) on floor {floor}, "
+                          f"or reconnect the beam to an existing column.")
+            else:
+                fix_ar = f"أضف الأعمدة المفقودة ({orphan_txt}) بالطابق {floor}، أو أعد توصيل العارضة بأعمدة موجودة."
+                fix_en = f"Add the missing column(s) ({', '.join(orphans)}) on floor {floor}, or reconnect the beam to existing columns."
+            out.append(self.make(
+                beam["id"], "العارضة",
+                self.msg_ar("العارضة", beam["id"], floor, "مرتبطة بعمود غير موجود في النموذج",
+                            f"مرجع {orphan_txt}", "مرجع لعمود إنشائي معرَّف"),
+                self.msg_en("Beam", beam["id"], floor, "references a column that does not exist in the model",
+                            f"reference {', '.join(orphans)}", "reference to a defined structural column"),
+                fix_ar, fix_en))
+        return out
+
+
+class LongSpanWithoutMidSupportRule(Rule):
+    """Rule 2 - beam span above 12 m requires an intermediate support."""
+
+    rule_id = 2
+    severity = "HIGH"
+    sbc_reference = "SBC 304-18 §9.3.1 (span/deflection control)"
+    MAX_SPAN_M = 12.0
+
+    def validate(self, model: Model) -> list[Violation]:
+        out: list[Violation] = []
+        for beam in model["beams"]:
+            span = float(_require(beam, "span_m", "Beam"))
+            if span <= self.MAX_SPAN_M or beam.get("mid_support", False):
+                continue
+            floor = beam["floor"]
+            out.append(self.make(
+                beam["id"], "العارضة",
+                self.msg_ar("العارضة", beam["id"], floor, "بحر يتجاوز 12 م دون دعامة وسطية",
+                            f"{span:.1f} م", f"≤ {self.MAX_SPAN_M:.1f} م أو وجود دعامة وسطية"),
+                self.msg_en("Beam", beam["id"], floor, "span exceeds 12 m with no intermediate support",
+                            f"{span:.1f} m", f"≤ {self.MAX_SPAN_M:.1f} m or an intermediate support"),
+                f"أضف عموداً أو جدار قص كدعامة وسطية عند منتصف العارضة (على بعد {span / 2:.2f} م من العمود "
+                f"{beam.get('start_column', '-')})، أو قلّص البحر إلى {self.MAX_SPAN_M:.0f} م أو أقل.",
+                f"Add a column or shear wall as a mid-span support ({span / 2:.2f} m from column "
+                f"{beam.get('start_column', '-')}), or reduce the span to {self.MAX_SPAN_M:.0f} m or less."))
+        return out
+
+
+class ColumnMinRebarRule(Rule):
+    """Rule 3 - minimum longitudinal reinforcement ratio for columns."""
+
+    rule_id = 3
+    severity = "CRITICAL"
+    sbc_reference = "SBC 301-18 §18.3"
+    MIN_RATIO = 0.010
+
+    def validate(self, model: Model) -> list[Violation]:
+        zone = _seismic_zone(model)
+        out: list[Violation] = []
+        for col in model["columns"]:
+            ratio = float(_require(col, "rebar_ratio", "Column"))
+            if ratio >= self.MIN_RATIO:
+                continue
+            floor = col["floor"]
+            out.append(self.make(
+                col["id"], "العمود",
+                self.msg_ar("العمود", col["id"], floor,
+                            f"نسبة تسليح أقل من الحد الأدنى للمنطقة الزلزالية {zone}",
+                            f"{ratio:.3f}", f"{self.MIN_RATIO:.3f}"),
+                self.msg_en("Column", col["id"], floor,
+                            f"rebar ratio below the minimum for seismic zone {zone}",
+                            f"{ratio:.3f}", f"{self.MIN_RATIO:.3f}"),
+                f"ارفع نسبة التسليح إلى {self.MIN_RATIO:.3f} على الأقل لاستيفاء {self.sbc_reference} للمنطقة {zone}.",
+                f"Increase the rebar ratio to at least {self.MIN_RATIO:.3f} to satisfy {self.sbc_reference} for zone {zone}."))
+        return out
+
+
+class ColumnAspectRatioRule(Rule):
+    """Rule 4 - shorter/longer column dimension must be at least 0.4."""
+
+    rule_id = 4
+    severity = "HIGH"
+    sbc_reference = "SBC 304-18 §18.7.2.1 (column cross-section ratio)"
+    MIN_RATIO = 0.4
+
+    def validate(self, model: Model) -> list[Violation]:
+        out: list[Violation] = []
+        for col in model["columns"]:
+            w, d = float(col["width_mm"]), float(col["depth_mm"])
+            short, long_ = min(w, d), max(w, d)
+            ratio = short / long_
+            if ratio >= self.MIN_RATIO:
+                continue
+            floor = col["floor"]
+            min_short = math.ceil(self.MIN_RATIO * long_ / 10) * 10
+            out.append(self.make(
+                col["id"], "العمود",
+                self.msg_ar("العمود", col["id"], floor, "نسبة العرض إلى العمق أقل من الحد الأدنى",
+                            f"{ratio:.3f} ({w:g}×{d:g} مم)", f"{self.MIN_RATIO:.3f}"),
+                self.msg_en("Column", col["id"], floor, "width/depth ratio below the minimum",
+                            f"{ratio:.3f} ({w:g}x{d:g} mm)", f"{self.MIN_RATIO:.3f}"),
+                f"زد البعد الأقصر إلى {min_short} مم على الأقل (مع بقاء البعد الأطول {long_:g} مم) لتصبح النسبة {self.MIN_RATIO:.2f} أو أكثر.",
+                f"Increase the shorter side to at least {min_short} mm (longer side {long_:g} mm) so the ratio is {self.MIN_RATIO:.2f} or more."))
+        return out
+
+
+class FoundationBearingRule(Rule):
+    """Rule 5 - applied soil pressure must not exceed allowable bearing capacity."""
+
+    rule_id = 5
+    severity = "CRITICAL"
+    sbc_reference = "SBC 303-18 (foundation bearing capacity)"
+
+    def validate(self, model: Model) -> list[Violation]:
+        out: list[Violation] = []
+        for f in model["foundations"]:
+            area = float(_require(f, "area_m2", "Foundation"))
+            load = float(_require(f, "load_kN", "Foundation"))
+            cap = float(_require(f, "bearing_capacity_kPa", "Foundation"))
+            pressure = load / area
+            if pressure <= cap:
+                continue
+            floor = f.get("floor", 0)
+            req_area = math.ceil(load / cap * 10) / 10
+            out.append(self.make(
+                f["id"], "الأساس",
+                self.msg_ar("الأساس", f["id"], floor, "إجهاد التربة المطبق يتجاوز قدرة التحمل",
+                            f"{pressure:.1f} kPa", f"≤ {cap:.1f} kPa"),
+                self.msg_en("Foundation", f["id"], floor, "applied soil pressure exceeds bearing capacity",
+                            f"{pressure:.1f} kPa", f"≤ {cap:.1f} kPa"),
+                f"زد مساحة القاعدة من {area:.1f} م² إلى {req_area:.1f} م² على الأقل، أو اختر نوع أساس أعمق (مثل الخوازيق) لتحمل الحمل {load:.0f} kN.",
+                f"Increase the footing area from {area:.1f} m² to at least {req_area:.1f} m², or choose a deeper foundation type (e.g. piles) to carry the {load:.0f} kN load."))
+        return out
+
+
+class BeamMinDepthRule(Rule):
+    """Rule 6 - minimum beam depth h >= span / 16."""
+
+    rule_id = 6
+    severity = "MEDIUM"
+    sbc_reference = "SBC 304-18 Table 9.3.1.1 (minimum beam depth)"
+    SPAN_DEPTH_DIVISOR = 16
+
+    def validate(self, model: Model) -> list[Violation]:
+        out: list[Violation] = []
+        for beam in model["beams"]:
+            span = float(_require(beam, "span_m", "Beam"))
+            depth = float(_require(beam, "depth_mm", "Beam"))
+            required = math.ceil(round(span * 1000 / self.SPAN_DEPTH_DIVISOR, 6))
+            if depth >= required:
+                continue
+            floor = beam["floor"]
+            out.append(self.make(
+                beam["id"], "العارضة",
+                self.msg_ar("العارضة", beam["id"], floor, "عمق العارضة أقل من الحد الأدنى (البحر/16)",
+                            f"{depth:g} مم", f"{required} مم"),
+                self.msg_en("Beam", beam["id"], floor, "beam depth below the minimum (span/16)",
+                            f"{depth:g} mm", f"{required} mm"),
+                f"زد عمق العارضة إلى {required} مم على الأقل (بحر {span:.1f} م)، أو أضف دعامة لتقليص البحر.",
+                f"Increase the beam depth to at least {required} mm (span {span:.1f} m), or add a support to shorten the span."))
+        return out
+
+
+class ShearWallCountRule(Rule):
+    """Rule 7 - at least 2 shear walls per principal direction on every floor."""
+
+    rule_id = 7
+    severity = "HIGH"
+    sbc_reference = "SBC 301-18 Ch.18 (seismic lateral force-resisting system)"
+    MIN_WALLS = 2
+    DIRECTIONS = ("X", "Y")
+
+    def validate(self, model: Model) -> list[Violation]:
+        zone = _seismic_zone(model)
+        floors = sorted({c["floor"] for c in model["columns"]})
+        out: list[Violation] = []
+        for floor in floors:
+            for direction in self.DIRECTIONS:
+                count = sum(
+                    1 for w in model["walls"]
+                    if w["floor"] == floor and w["type"] == "shear"
+                    and str(w["direction"]).upper() == direction)
+                if count >= self.MIN_WALLS:
+                    continue
+                eid = f"LFRS-F{floor}-{direction}"
+                missing = self.MIN_WALLS - count
+                out.append(self.make(
+                    eid, "نظام مقاومة القوى الجانبية",
+                    self.msg_ar("نظام مقاومة القوى الجانبية", eid, floor,
+                                f"عدد جدران القص في الاتجاه {direction} أقل من الحد الأدنى للمنطقة الزلزالية {zone}",
+                                str(count), str(self.MIN_WALLS)),
+                    self.msg_en("Lateral system", eid, floor,
+                                f"shear-wall count in direction {direction} below the minimum for seismic zone {zone}",
+                                str(count), str(self.MIN_WALLS)),
+                    f"أضف {missing} جدار قص على الأقل في الاتجاه {direction} بالطابق {floor}، موزعة على جانبي مركز الكتلة لتقليل الالتواء.",
+                    f"Add at least {missing} shear wall(s) in direction {direction} on floor {floor}, placed on both sides of the centre of mass to limit torsion."))
+        return out
+
+
+class ConcreteCoverRule(Rule):
+    """Rule 8 - minimum concrete cover of 40 mm for columns and beams."""
+
+    rule_id = 8
+    severity = "MEDIUM"
+    sbc_reference = "SBC 304-18 §20.5.1 (concrete cover)"
+    MIN_COVER_MM = 40
+
+    def validate(self, model: Model) -> list[Violation]:
+        out: list[Violation] = []
+        for key, ar, en in (("columns", "العمود", "Column"), ("beams", "العارضة", "Beam")):
+            for el in model[key]:
+                cover = float(_require(el, "concrete_cover_mm", en))
+                if cover >= self.MIN_COVER_MM:
+                    continue
+                floor = el["floor"]
+                out.append(self.make(
+                    el["id"], ar,
+                    self.msg_ar(ar, el["id"], floor, "الغطاء الخرساني أقل من الحد الأدنى",
+                                f"{cover:g} مم", f"{self.MIN_COVER_MM} مم"),
+                    self.msg_en(en, el["id"], floor, "concrete cover below the minimum",
+                                f"{cover:g} mm", f"{self.MIN_COVER_MM} mm"),
+                    f"زد الغطاء الخرساني إلى {self.MIN_COVER_MM} مم على الأقل (استخدم فواصل تسليح مناسبة وراجع أبعاد القالب).",
+                    f"Increase the concrete cover to at least {self.MIN_COVER_MM} mm (use proper spacers and check the formwork dimensions)."))
+        return out
+
+
+# ----------------------------------------------------------------------------
+# Engine
+# ----------------------------------------------------------------------------
+class RulesEngine:
+    def __init__(self, rules: list[Rule]) -> None:
+        self.rules = list(rules)
+
+    @classmethod
+    def default(cls) -> "RulesEngine":
+        return cls([
+            OrphanColumnReferenceRule(),
+            LongSpanWithoutMidSupportRule(),
+            ColumnMinRebarRule(),
+            ColumnAspectRatioRule(),
+            FoundationBearingRule(),
+            BeamMinDepthRule(),
+            ShearWallCountRule(),
+            ConcreteCoverRule(),
+        ])
+
+    def run(self, model: Model) -> list[Violation]:
+        violations: list[Violation] = []
+        for rule in self.rules:
+            violations.extend(rule.validate(model))
+        return sorted(violations, key=lambda v: (SEVERITY_RANK[v.severity], v.rule_id, v.element_id))
+
+
+def load_model(path: str | Path) -> Model:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    path = Path(argv[0]) if argv else Path(__file__).with_name("sample_model.json")
+    violations = RulesEngine.default().run(load_model(path))
+    counts = {s: sum(v.severity == s for v in violations) for s in SEVERITY_RANK}
+    print(f"Violations: {len(violations)}  " + "  ".join(f"{s}={n}" for s, n in counts.items()))
+    for v in violations:
+        print(f"[{v.severity}] R{v.rule_id} {v.element_id}\n  {v.message_ar}\n  → {v.suggested_fix_ar}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
