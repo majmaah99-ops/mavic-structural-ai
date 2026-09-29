@@ -1,0 +1,23 @@
+# MAVIC — AI Structural Compliance Agent
+# Python 3.10+
+
+# Core data validation
+pydantic>=2.5.0
+
+# Interactive 3D visualization
+plotly>=5.18.0
+
+# HTML templating for reports
+jinja2>=3.1.2
+
+# Colored CLI output
+colorama>=0.4.6
+
+# Data manipulation
+pandas>=2.1.0
+
+# Optional: AI-powered suggestions (falls back to offline mode if absent)
+openai>=1.6.0
+
+# Testing
+pytest>=7.4.0
