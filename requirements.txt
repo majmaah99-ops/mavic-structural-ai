@@ -21,3 +21,7 @@ openai>=1.6.0
 
 # Testing
 pytest>=7.4.0
+
+# Web service (for Render deployment)
+flask>=3.0.0
+gunicorn>=21.2.0
