@@ -1,27 +1,30 @@
-# MAVIC — AI Structural Compliance Agent
+# ============================================================================
+# MIZAN by MAVIC — منصة التدقيق الهندسي الشامل
+# SBC 201 + 301 + 303 + 304 | 11 قاعدة فعالة
 # Python 3.10+
+# ============================================================================
 
-# Core data validation
+# --- Core data validation ---
 pydantic>=2.5.0
 
-# Interactive 3D visualization
+# --- Interactive 3D visualization (report generator) ---
 plotly>=5.18.0
 
-# HTML templating for reports
+# --- HTML templating for reports ---
 jinja2>=3.1.2
 
-# Colored CLI output
+# --- Colored CLI output ---
 colorama>=0.4.6
 
-# Data manipulation
+# --- Data manipulation ---
 pandas>=2.1.0
 
-# Optional: AI-powered suggestions (falls back to offline mode if absent)
+# --- AI-powered suggestions (optional, falls back to offline) ---
 openai>=1.6.0
 
-# Testing
+# --- Testing ---
 pytest>=7.4.0
 
-# Web service (for Render deployment)
+# --- Web service (for Render deployment) ---
 flask>=3.0.0
 gunicorn>=21.2.0
