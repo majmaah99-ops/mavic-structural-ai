@@ -1,23 +1,23 @@
 """
-main.py - نقطة التشغيل الرئيسية لمشروع MAVIC
-==============================================
+main.py - نقطة التشغيل الرئيسية لمشروع MIZAN by MAVIC
+=======================================================
 
-MAVIC AI Structural Compliance Agent — CLI Entry Point
+MIZAN by MAVIC — SBC Compliance Agent CLI Entry Point
 
 الاستخدام / Usage:
-    python main.py --model sample_model.json --out compliance_report.html
+    python main.py --model sample_model.json --out docs/compliance_report.html
     python main.py --model sample_model.json --no-ai
     python main.py --help
 
 يقوم هذا الملف بتنسيق سير العمل الكامل:
-    1. تحميل النموذج الإنشائي من JSON
-    2. تشغيل محرك القواعد (8 قواعد SBC)
+    1. تحميل النموذج من JSON
+    2. تشغيل محرك القواعد (11 قاعدة SBC: 8 إنشائية + 3 معمارية)
     3. إثراء المخالفات بطبقة الذكاء الاصطناعي
     4. توليد التقرير التفاعلي HTML
     5. طباعة ملخص ملوَّن في الطرفية
 
 Author: majmaah99-ops
-Project: mavic-structural-ai
+Project: mizan-by-mavic
 License: MIT
 """
 from __future__ import annotations
@@ -46,13 +46,13 @@ SEVERITY_COLORS = {
 
 
 def _banner() -> str:
-    """شعار MAVIC في الطرفية. / ASCII banner."""
+    """شعار MIZAN by MAVIC في الطرفية. / ASCII banner."""
     return (
         f"\n{Fore.CYAN}{Style.BRIGHT}"
         "╔══════════════════════════════════════════════════════════════════╗\n"
         "║                                                                  ║\n"
-        "║   MAVIC — AI Structural Compliance Agent                         ║\n"
-        "║   المدقق الذكي للامتثال الإنشائي (SBC)                            ║\n"
+        "║   MIZAN by MAVIC — منصة التدقيق الهندسي الشامل                    ║\n"
+        "║   SBC 201 + 301 + 303 + 304 — 11 قاعدة فعالة                     ║\n"
         "║   IECE 2026 · Track 2 — Engineering Development                  ║\n"
         "║                                                                  ║\n"
         "╚══════════════════════════════════════════════════════════════════╝"
@@ -61,18 +61,26 @@ def _banner() -> str:
 
 
 def _print_summary(violations, elapsed: float, report_path: Path) -> None:
-    """طباعة ملخص ملوَّن للمخالفات. / Print a colored violations summary."""
+    """طباعة ملخص ملوَّن. / Print a colored summary."""
     counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0}
+    arch_count = 0
+    struct_count = 0
     for v in violations:
         counts[v.severity] = counts.get(v.severity, 0) + 1
+        if v.rule_id in (9, 10, 11):
+            arch_count += 1
+        else:
+            struct_count += 1
 
     print(f"\n{Fore.WHITE}{Style.BRIGHT}── نتيجة التدقيق ────────────────────────────{Style.RESET_ALL}")
-    print(f"  ⏱️  زمن التدقيق      : {Fore.CYAN}{elapsed:.3f} ثانية{Style.RESET_ALL}")
-    print(f"  🔢  إجمالي المخالفات : {Fore.WHITE}{Style.BRIGHT}{len(violations)}{Style.RESET_ALL}")
+    print(f"  ⏱️  زمن التدقيق        : {Fore.CYAN}{elapsed:.3f} ثانية{Style.RESET_ALL}")
+    print(f"  🔢  إجمالي المخالفات   : {Fore.WHITE}{Style.BRIGHT}{len(violations)}{Style.RESET_ALL}")
+    print(f"  🏗️  إنشائية (MAVIC)    : {Fore.MAGENTA}{struct_count}{Style.RESET_ALL}")
+    print(f"  📐  معمارية (MIZAN)    : {Fore.MAGENTA}{arch_count}{Style.RESET_ALL}")
     for severity in ("CRITICAL", "HIGH", "MEDIUM"):
         color = SEVERITY_COLORS[severity]
         print(f"      {color}• {severity:<10}{Style.RESET_ALL} : {counts[severity]}")
-    print(f"\n  📄  التقرير الكامل   : {Fore.GREEN}{report_path.resolve()}{Style.RESET_ALL}\n")
+    print(f"\n  📄  التقرير الكامل     : {Fore.GREEN}{report_path.resolve()}{Style.RESET_ALL}\n")
 
 
 def _print_violations(violations) -> None:
@@ -80,7 +88,10 @@ def _print_violations(violations) -> None:
     print(f"{Fore.WHITE}{Style.BRIGHT}── تفاصيل المخالفات ─────────────────────────{Style.RESET_ALL}")
     for i, v in enumerate(violations, 1):
         color = SEVERITY_COLORS[v.severity]
-        print(f"\n  {color}[{i}] ({v.severity}) R{v.rule_id} — {v.element_type} {v.element_id}{Style.RESET_ALL}")
+        category = "معماري" if v.rule_id in (9, 10, 11) else "إنشائي"
+        print(f"\n  {color}[{i}] ({v.severity}) R{v.rule_id} — "
+              f"{v.element_type} {v.element_id}{Style.RESET_ALL}  "
+              f"{Fore.LIGHTBLACK_EX}[{category}]{Style.RESET_ALL}")
         print(f"      {Fore.LIGHTWHITE_EX}{v.message_ar}{Style.RESET_ALL}")
         print(f"      {Fore.LIGHTBLACK_EX}{v.sbc_reference}{Style.RESET_ALL}")
 
@@ -106,21 +117,24 @@ def run_audit(
     print(_banner())
 
     # 1. Load
-    print(f"{Fore.CYAN}[1/4]{Style.RESET_ALL} تحميل النموذج الإنشائي من: {model_path}")
+    print(f"{Fore.CYAN}[1/4]{Style.RESET_ALL} تحميل النموذج من: {model_path}")
     model = load_model(model_path)
     project = model.get("project", {})
     print(f"       └─ المدينة: {project.get('city', '—')} | "
           f"المنطقة الزلزالية: {project.get('seismic_zone', '—')} | "
-          f"عدد العناصر: "
+          f"العناصر: "
           f"{len(model.get('columns', []))} عمود، "
-          f"{len(model.get('beams', []))} جسر")
+          f"{len(model.get('beams', []))} جسر، "
+          f"{len(model.get('buildings', []))} مبنى")
 
     # 2. Run rules engine
-    print(f"\n{Fore.CYAN}[2/4]{Style.RESET_ALL} تشغيل محرك القواعد (8 قواعد SBC)...")
+    print(f"\n{Fore.CYAN}[2/4]{Style.RESET_ALL} "
+          f"تشغيل محرك القواعد (11 قاعدة SBC: 8 إنشائية + 3 معمارية)...")
     t0 = time.perf_counter()
     violations = RulesEngine.default().run(model)
     elapsed = time.perf_counter() - t0
-    print(f"       └─ {Fore.YELLOW}{len(violations)}{Style.RESET_ALL} مخالفة في {elapsed:.3f} ثانية")
+    print(f"       └─ {Fore.YELLOW}{len(violations)}{Style.RESET_ALL} مخالفة "
+          f"في {elapsed:.3f} ثانية")
 
     # 3. AI enhancement
     if use_ai:
@@ -157,25 +171,26 @@ def run_audit(
 def build_parser() -> argparse.ArgumentParser:
     """بناء محلل الوسائط. / Build the CLI argument parser."""
     parser = argparse.ArgumentParser(
-        prog="mavic",
-        description="MAVIC — المدقق الذكي للامتثال الإنشائي وفق أكواد SBC",
+        prog="mizan",
+        description="MIZAN by MAVIC — المدقق الذكي للامتثال الهندسي وفق SBC",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "أمثلة / Examples:\n"
             "  python main.py\n"
-            "  python main.py --model sample_model.json --out report.html\n"
+            "  python main.py --model sample_model.json --out docs/report.html\n"
             "  python main.py --model sample_model.json --no-ai\n"
         ),
     )
     parser.add_argument(
         "--model", "-m",
         default="sample_model.json",
-        help="مسار ملف النموذج الإنشائي JSON (افتراضي: sample_model.json)",
+        help="مسار ملف النموذج JSON (افتراضي: sample_model.json)",
     )
     parser.add_argument(
         "--out", "-o",
-        default="compliance_report.html",
-        help="مسار ملف التقرير HTML الناتج (افتراضي: compliance_report.html)",
+        default="docs/compliance_report.html",
+        help="مسار ملف التقرير HTML الناتج "
+             "(افتراضي: docs/compliance_report.html)",
     )
     parser.add_argument(
         "--no-ai",
@@ -209,7 +224,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
     except Exception as exc:
-        print(f"\n{Fore.RED}✗ خطأ غير متوقع: {type(exc).__name__}: {exc}{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}✗ خطأ غير متوقع: "
+              f"{type(exc).__name__}: {exc}{Style.RESET_ALL}")
         return 2
 
 
