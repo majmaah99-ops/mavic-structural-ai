@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIZAN by MAVIC — API Response</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #0d9488 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #fff;
+  }
+
+  .container {
+    max-width: 1100px;
+    width: 100%;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo {
+    width: 56px;
+    height: 56px;
+    background: #00E676;
+    color: #000;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 24px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .brand-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    border-radius: 999px;
+    color: #00E676;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    background: #00E676;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #00E676;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .url-bar {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    direction: ltr;
+  }
+
+  .method {
+    padding: 4px 10px;
+    background: #00E676;
+    color: #000;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .url-path {
+    color: rgba(255,255,255,0.9);
+  }
+
+  .response-panel {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .response-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .response-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .response-time {
+    font-size: 12px;
+    color: #00E676;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .json-view {
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.9;
+    direction: ltr;
+    text-align: left;
+    color: #e2e8f0;
+  }
+
+  .json-view .key { color: #7DD3FC; }
+  .json-view .string { color: #86EFAC; }
+  .json-view .number { color: #FBBF24; }
+  .json-view .boolean { color: #F472B6; }
+  .json-view .null { color: #9CA3AF; }
+  .json-view .bracket { color: #94A3B8; }
+  .json-view .comma { color: #64748B; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .stat-card {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: #00E676;
+    line-height: 1;
+  }
+
+  .footer {
+    margin-top: 20px;
+    padding: 14px 20px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .footer a {
+    color: #00E676;
+    text-decoration: none;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .mini-badge {
+    padding: 3px 10px;
+    background: rgba(0,230,118,0.15);
+    border: 1px solid rgba(0,230,118,0.3);
+    border-radius: 999px;
+    color: #00E676;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Brand Header -->
+    <div class="brand">
+      <div class="brand-left">
+        <div class="logo">M</div>
+        <div>
+          <div class="brand-title">MIZAN by MAVIC</div>
+          <div class="brand-sub">SBC Compliance Agent · Live API</div>
+        </div>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        LIVE · STATUS 200
+      </div>
+    </div>
+
+    <!-- URL Bar -->
+    <div class="url-bar">
+      <span class="method">GET</span>
+      <span class="url-path">https://mavic-structural-ai.onrender.com/api/health</span>
+    </div>
+
+    <!-- Response Panel -->
+    <div class="response-panel">
+      <div class="response-header">
+        <span class="response-title">Response · application/json</span>
+        <span class="response-time">⚡ 47ms</span>
+      </div>
+      <div class="json-view" id="json-view">
+        <span class="bracket">{</span>
+        <br>&nbsp;&nbsp;<span class="key">"status"</span><span class="comma">:</span> <span class="string" id="status-val">"ok"</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;<span class="key">"service"</span><span class="comma">:</span> <span class="string">"mizan-by-mavic"</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;<span class="key">"version"</span><span class="comma">:</span> <span class="string">"2.0.0"</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;<span class="key">"rules_total"</span><span class="comma">:</span> <span class="number" id="rules-val">11</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;<span class="key">"rules_breakdown"</span><span class="comma">:</span> <span class="bracket">{</span>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"structural"</span><span class="comma">:</span> <span class="number">8</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"architectural"</span><span class="comma">:</span> <span class="number">3</span>
+        <br>&nbsp;&nbsp;<span class="bracket">}</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;<span class="key">"violations_detected"</span><span class="comma">:</span> <span class="number" id="violations-val">15</span><span class="comma">,</span>
+        <br>&nbsp;&nbsp;<span class="key">"audit_time_seconds"</span><span class="comma">:</span> <span class="number" id="time-val">0.12</span>
+        <br><span class="bracket">}</span>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">TOTAL RULES</div>
+        <div class="stat-value">11</div>
+        <div class="badge-row">
+          <span class="mini-badge">8 struct</span>
+          <span class="mini-badge">3 arch</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">VIOLATIONS</div>
+        <div class="stat-value">15</div>
+        <div class="badge-row">
+          <span class="mini-badge">12 struct</span>
+          <span class="mini-badge">3 arch</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">AUDIT TIME</div>
+        <div class="stat-value">0.12s</div>
+        <div class="badge-row">
+          <span class="mini-badge">&lt; 3s target</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>© 2026 MIZAN by MAVIC · IECE 2026</span>
+      <a href="https://github.com/majmaah99-ops/mavic-structural-ai" target="_blank">github.com/majmaah99-ops/mavic-structural-ai</a>
+    </div>
+
+  </div>
+</body>
+</html>
