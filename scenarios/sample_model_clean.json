@@ -1,0 +1,76 @@
+{
+  "project": {
+    "name_ar": "فيلا سكنية - نموذج مطابق",
+    "name_en": "Residential Villa - Fully Compliant",
+    "city": "Riyadh",
+    "code_version": "SBC 2024",
+    "seismic_zone": 1,
+    "stories": 2,
+    "modeled_floors": [1, 2],
+    "note": "Scenario A — Clean model with 0 violations"
+  },
+
+  "columns": [
+    {"id": "C-001", "floor": 1, "x": 0,   "y": 0,   "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-002", "floor": 1, "x": 6.5, "y": 0,   "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-003", "floor": 1, "x": 13,  "y": 0,   "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-004", "floor": 1, "x": 0,   "y": 6.5, "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-005", "floor": 1, "x": 6.5, "y": 6.5, "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-006", "floor": 1, "x": 13,  "y": 6.5, "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-007", "floor": 2, "x": 0,   "y": 0,   "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-008", "floor": 2, "x": 6.5, "y": 0,   "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-009", "floor": 2, "x": 13,  "y": 0,   "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-010", "floor": 2, "x": 0,   "y": 6.5, "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-011", "floor": 2, "x": 6.5, "y": 6.5, "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45},
+    {"id": "C-012", "floor": 2, "x": 13,  "y": 6.5, "width_mm": 600, "depth_mm": 600, "rebar_ratio": 0.015, "concrete_cover_mm": 45}
+  ],
+
+  "beams": [
+    {"id": "B-001", "floor": 1, "direction": "X", "start_column": "C-001", "end_column": "C-002", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-002", "floor": 1, "direction": "X", "start_column": "C-002", "end_column": "C-003", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-003", "floor": 1, "direction": "X", "start_column": "C-004", "end_column": "C-005", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-004", "floor": 1, "direction": "X", "start_column": "C-005", "end_column": "C-006", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-005", "floor": 1, "direction": "Y", "start_column": "C-001", "end_column": "C-004", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-006", "floor": 1, "direction": "Y", "start_column": "C-002", "end_column": "C-005", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-007", "floor": 1, "direction": "Y", "start_column": "C-003", "end_column": "C-006", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-008", "floor": 2, "direction": "X", "start_column": "C-007", "end_column": "C-008", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-009", "floor": 2, "direction": "X", "start_column": "C-008", "end_column": "C-009", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-010", "floor": 2, "direction": "X", "start_column": "C-010", "end_column": "C-011", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-011", "floor": 2, "direction": "X", "start_column": "C-011", "end_column": "C-012", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-012", "floor": 2, "direction": "Y", "start_column": "C-007", "end_column": "C-010", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-013", "floor": 2, "direction": "Y", "start_column": "C-008", "end_column": "C-011", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45},
+    {"id": "B-014", "floor": 2, "direction": "Y", "start_column": "C-009", "end_column": "C-012", "span_m": 6.5, "width_mm": 300, "depth_mm": 500, "mid_support": false, "concrete_cover_mm": 45}
+  ],
+
+  "walls": [
+    {"id": "W-001", "floor": 1, "type": "shear", "direction": "X", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-002", "floor": 1, "type": "shear", "direction": "X", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-003", "floor": 1, "type": "shear", "direction": "Y", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-004", "floor": 1, "type": "shear", "direction": "Y", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-005", "floor": 2, "type": "shear", "direction": "X", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-006", "floor": 2, "type": "shear", "direction": "X", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-007", "floor": 2, "type": "shear", "direction": "Y", "length_m": 6.5, "thickness_mm": 300},
+    {"id": "W-008", "floor": 2, "type": "shear", "direction": "Y", "length_m": 6.5, "thickness_mm": 300}
+  ],
+
+  "foundations": [
+    {"id": "F-001", "column_id": "C-001", "floor": 0, "type": "isolated_footing", "area_m2": 12.0, "load_kN": 2600, "bearing_capacity_kPa": 300},
+    {"id": "F-002", "column_id": "C-002", "floor": 0, "type": "isolated_footing", "area_m2": 12.0, "load_kN": 2600, "bearing_capacity_kPa": 300},
+    {"id": "F-003", "column_id": "C-003", "floor": 0, "type": "isolated_footing", "area_m2": 12.0, "load_kN": 2600, "bearing_capacity_kPa": 300},
+    {"id": "F-004", "column_id": "C-004", "floor": 0, "type": "isolated_footing", "area_m2": 12.0, "load_kN": 2600, "bearing_capacity_kPa": 300},
+    {"id": "F-005", "column_id": "C-005", "floor": 0, "type": "isolated_footing", "area_m2": 12.0, "load_kN": 2600, "bearing_capacity_kPa": 300},
+    {"id": "F-006", "column_id": "C-006", "floor": 0, "type": "isolated_footing", "area_m2": 12.0, "load_kN": 2600, "bearing_capacity_kPa": 300}
+  ],
+
+  "buildings": [
+    {"id": "BLD-01", "floor": 1, "setback_rear_m": 3.5}
+  ],
+
+  "parking": [
+    {"id": "P-ACC-01", "floor": 0, "is_accessible": true, "width_m": 3.8}
+  ],
+
+  "egress_paths": [
+    {"id": "EG-01", "floor": 1, "max_distance_m": 15.0}
+  ]
+}
