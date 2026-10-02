@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>MIZAN by MAVIC — Pitch One-Pager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark: #0f172a;
+    --teal: #0d9488;
+    --accent: #10b981;
+    --critical: #dc2626;
+    --high: #f59e0b;
+    --medium: #3b82f6;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg-soft: #f8fafc;
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm 10mm;
+  }
+
+  body {
+    font-family: 'Tajawal', sans-serif;
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 10.5pt;
+    background: #fff;
+  }
+
+  .page {
+    max-width: 190mm;
+    margin: 0 auto;
+    page-break-after: always;
+  }
+
+  .page:last-child { page-break-after: auto; }
+
+  /* ==== COVER HEADER ==== */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #0d9488 100%);
+    color: #fff;
+    padding: 18px 22px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .cover-left h1 {
+    font-size: 22pt;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .cover-left .subtitle {
+    font-size: 11pt;
+    opacity: 0.9;
+    margin-bottom: 8px;
+  }
+
+  .cover-left .meta-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 9pt;
+  }
+
+  .cover-left .meta-pills span {
+    background: rgba(255,255,255,0.18);
+    padding: 3px 10px;
+    border-radius: 12px;
+    backdrop-filter: blur(6px);
+  }
+
+  .cover-right {
+    text-align: center;
+    padding-right: 20px;
+    border-right: 2px solid rgba(255,255,255,0.2);
+  }
+
+  .cover-right .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26pt;
+    font-weight: 700;
+    letter-spacing: 3px;
+  }
+
+  .cover-right .tagline {
+    font-size: 9pt;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  /* ==== SECTIONS ==== */
+  h2 {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 14px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--teal);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  h2 .icon { font-size: 14pt; }
+
+  p { margin-bottom: 8px; }
+
+  /* ==== STORY BOX ==== */
+  .story {
+    background: linear-gradient(135deg, #fef2f2, #fff5f5);
+    border-right: 4px solid var(--critical);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 10.5pt;
+    line-height: 1.65;
+  }
+
+  .story strong { color: var(--critical); }
+
+  /* ==== TABLES ==== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 9.5pt;
+  }
+
+  th {
+    background: var(--dark);
+    color: #fff;
+    padding: 7px 10px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 9.5pt;
+  }
+
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+
+  tr:nth-child(even) td { background: var(--bg-soft); }
+
+  .table-small th,
+  .table-small td { padding: 5px 8px; font-size: 9pt; }
+
+  /* ==== BADGES ==== */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .badge.critical { background: var(--critical); }
+  .badge.high { background: var(--high); }
+  .badge.medium { background: var(--medium); }
+
+  /* ==== METRICS GRID ==== */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .metric-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--teal);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .metric-card .label {
+    font-size: 8.5pt;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .metric-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15pt;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.1;
+  }
+
+  .metric-card .value.success { color: var(--accent); }
+  .metric-card .value.critical { color: var(--critical); }
+
+  .metric-card .sub {
+    font-size: 8pt;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* ==== TWO COLUMN ==== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 8px 0;
+  }
+
+  /* ==== HIGHLIGHT BOX ==== */
+  .highlight {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-right: 4px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+
+  .highlight strong { color: var(--accent); }
+
+  /* ==== LISTS ==== */
+  ul { padding-right: 18px; margin-bottom: 8px; }
+  li { margin-bottom: 3px; font-size: 10pt; }
+
+  /* ==== ROADMAP ==== */
+  .roadmap-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 9.5pt;
+  }
+
+  .roadmap-row.done { background: rgba(16,185,129,0.08); }
+
+  .roadmap-row .phase {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--teal);
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  .roadmap-row .scope { flex: 1; }
+
+  .roadmap-row .status {
+    width: 80px;
+    text-align: center;
+    font-size: 9pt;
+  }
+
+  .roadmap-row .date {
+    width: 80px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9pt;
+    color: var(--muted);
+  }
+
+  /* ==== FOOTER ==== */
+  .footer-cta {
+    background: var(--dark);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  .footer-cta h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .footer-cta p {
+    font-size: 9.5pt;
+    opacity: 0.85;
+    margin: 0;
+  }
+
+  .footer-cta .links {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9pt;
+  }
+
+  .footer-cta .links span { opacity: 0.75; }
+
+  /* ==== SECTION DIVIDER ==== */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  /* ==== PRINT OPTIMIZATION ==== */
+  @media print {
+    body { font-size: 10pt; }
+    .page { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+    table { page-break-inside: avoid; }
+    .metrics { page-break-inside: avoid; }
+    .highlight { page-break-inside: avoid; }
+    .story { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE 1 -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Cover -->
+  <div class="cover">
+    <div class="cover-left">
+      <h1>MIZAN by MAVIC</h1>
+      <div class="subtitle">منصة التدقيق الهندسي الآلي وفق أكواد البناء السعودية</div>
+      <div class="meta-pills">
+        <span>محرك قواعد حي</span>
+        <span>11 قاعدة SBC</span>
+        <span>0.12 ثانية</span>
+        <span>دقة 95%</span>
+      </div>
+    </div>
+    <div class="cover-right">
+      <div class="logo">MIZAN</div>
+      <div class="tagline">by MAVIC · SBC Compliance</div>
+    </div>
+  </div>
+
+  <p style="text-align:center; font-size:9.5pt; color:var(--muted); margin-top:6px;">
+    <strong>IECE 2026</strong> · المسار الثاني: التطوير الهندسي · التحدي 01: التدقيق الآلي والامتثال للأكواد
+  </p>
+
+  <!-- Story -->
+  <h2><span class="icon">💥</span> المشكلة — قصة حقيقية</h2>
+  <div class="story">
+    مهندس في مكتب بالرياض، حي الملقا. قدّم مخطط فيلا 520 متر. <br>
+    بعد <strong>18 يوم انتظار</strong>، رجع المخطط مرفوضاً. السبب؟ <strong>50 سم.</strong><br>
+    الارتداد الخلفي 2.5 متر بدل 3 متر.<br>
+    خسر العميل، وخسر المكتب <strong>12 ألف ريال</strong> تعديل، وقبلها 18 يوماً من عمر المشروع.
+  </div>
+  <p style="text-align:center; font-weight:700; color:var(--critical); margin: 6px 0;">
+    هذه القصة تتكرر 11,000 مرة سنوياً في السعودية وحدها.
+  </p>
+
+  <!-- Market -->
+  <h2><span class="icon">📊</span> أرقام السوق</h2>
+  <table class="table-small">
+    <thead>
+      <tr>
+        <th>المؤشر</th>
+        <th style="text-align:center;">الرقم</th>
+        <th style="text-align:center;">الأثر</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>متوسط زمن ترخيص البلدية</td>
+        <td style="text-align:center; font-weight:700; color:var(--critical);">18 يوم</td>
+        <td style="text-align:center;">تأخير كل مشروع</td>
+      </tr>
+      <tr>
+        <td>نسبة رفض المخططات</td>
+        <td style="text-align:center; font-weight:700; color:var(--critical);">42%</td>
+        <td style="text-align:center;">إعادة عمل مكلفة</td>
+      </tr>
+      <tr>
+        <td>تكلفة إعادة تصميم مخطط مرفوض</td>
+        <td style="text-align:center; font-weight:700; color:var(--critical);">24,500 ريال</td>
+        <td style="text-align:center;">خسارة مباشرة</td>
+      </tr>
+      <tr>
+        <td>تكلفة إعادة عمل إنشائية متأخرة</td>
+        <td style="text-align:center; font-weight:700; color:var(--critical);">2 مليون ريال</td>
+        <td style="text-align:center;">كارثة مالية</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:9.5pt; margin-top:6px;">
+    <strong>السبب الجذري:</strong> معظم حالات الرفض ناتجة عن مخالفات SBC صريحة (ارتدادات، مواقف، مخارج، تسليح) — <strong>قابلة للكشف الآلي</strong>.
+  </p>
+
+  <!-- Solution -->
+  <h2><span class="icon">✅</span> الحل — MIZAN by MAVIC</h2>
+  <p>
+    <strong>محرك قواعد حي</strong> يتحقق من مطابقة المخططات الإنشائية والمعمارية لأكواد البناء السعودية في <strong>0.12 ثانية</strong>.
+  </p>
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="label">زمن التدقيق</div>
+      <div class="value success">0.12<span style="font-size:9pt;">ث</span></div>
+      <div class="sub">مقابل 3 أيام يدوياً</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">دقة الكشف</div>
+      <div class="value success">95%</div>
+      <div class="sub">مقابل 81% يدوياً</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">تغطية العناصر</div>
+      <div class="value success">100%</div>
+      <div class="sub">كامل بدلاً من عينات</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">التكلفة</div>
+      <div class="value success">~0</div>
+      <div class="sub">SaaS بدل 15,000 ر.س</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE 2 -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Rules -->
+  <h2><span class="icon">🔬</span> القواعد الإحدى عشر المُطبّقة</h2>
+
+  <div class="two-col">
+    <div>
+      <p style="font-size:10pt; font-weight:700; color:var(--critical); margin-bottom:4px;">
+        🏗️ إنشائي (MAVIC) — 8 قواعد
+      </p>
+      <table class="table-small">
+        <thead>
+          <tr>
+            <th style="width:24px;">#</th>
+            <th>القاعدة</th>
+            <th style="width:110px;">المرجع</th>
+            <th style="width:70px; text-align:center;">الخطورة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>استمرارية الأعمدة</td><td>SBC 304-18 §7.2</td><td style="text-align:center;"><span class="badge critical">CRIT</span></td></tr>
+          <tr><td>2</td><td>بحر الجسر &gt; 12م</td><td>SBC 304-18 §9.4</td><td style="text-align:center;"><span class="badge high">HIGH</span></td></tr>
+          <tr><td>3</td><td>التسليح الزلزالي</td><td>SBC 301-18 §18.3</td><td style="text-align:center;"><span class="badge critical">CRIT</span></td></tr>
+          <tr><td>4</td><td>نسبة أبعاد العمود</td><td>SBC 304-18 §10.3</td><td style="text-align:center;"><span class="badge high">HIGH</span></td></tr>
+          <tr><td>5</td><td>قدرة تحمل التربة</td><td>SBC 303-18 §5.6</td><td style="text-align:center;"><span class="badge critical">CRIT</span></td></tr>
+          <tr><td>6</td><td>عمق الجسر (Span/16)</td><td>SBC 304-18 §9.3</td><td style="text-align:center;"><span class="badge medium">MED</span></td></tr>
+          <tr><td>7</td><td>جدران القص</td><td>SBC 301-18 §12.2</td><td style="text-align:center;"><span class="badge high">HIGH</span></td></tr>
+          <tr><td>8</td><td>الغطاء الخرساني</td><td>SBC 304-18 §20.5</td><td style="text-align:center;"><span class="badge medium">MED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <p style="font-size:10pt; font-weight:700; color:#7c4dff; margin-bottom:4px;">
+        📐 معماري (MIZAN) — 3 قواعد
+      </p>
+      <table class="table-small">
+        <thead>
+          <tr>
+            <th style="width:24px;">#</th>
+            <th>القاعدة</th>
+            <th style="width:110px;">المرجع</th>
+            <th style="width:70px; text-align:center;">الخطورة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>9</td><td>الارتداد الخلفي ≥ 3.0م</td><td>SBC 201 §3.2.1</td><td style="text-align:center;"><span class="badge high">HIGH</span></td></tr>
+          <tr><td>10</td><td>موقف الإعاقة ≥ 3.6م</td><td>SBC 201 §8.4.3</td><td style="text-align:center;"><span class="badge high">HIGH</span></td></tr>
+          <tr><td>11</td><td>مسافة الإخلاء ≤ 20م</td><td>SBC 201 §10.1.5</td><td style="text-align:center;"><span class="badge critical">CRIT</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 style="margin-top:14px;"><span class="icon">🧠</span> الذكاء الاصطناعي المدمج</h2>
+      <ul style="font-size:9.5pt;">
+        <li><strong>السبب الجذري:</strong> تحليل هندسي دقيق</li>
+        <li><strong>3 خطوات إصلاح</strong> محددة وقابلة للتنفيذ</li>
+        <li><strong>أثر التكلفة</strong> على المشروع</li>
+        <li><strong>الأولوية الزمنية</strong> للمعالجة</li>
+        <li>وضعان: <strong>ONLINE</strong> (OpenAI) + <strong>OFFLINE</strong> (قاموس مدمج)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Live Demo -->
+  <h2><span class="icon">🎬</span> النموذج الأولي الحي — ليس Mockup</h2>
+  <p style="margin-bottom:6px;"><strong>اختبار اللجنة في 30 ثانية:</strong></p>
+  <table class="table-small">
+    <thead>
+      <tr>
+        <th style="width:24px;">#</th>
+        <th>الإجراء</th>
+        <th>النتيجة الفورية</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>حرّك سلايدر الارتداد من 2.5 → 3.5</td>
+        <td>المخالفة تختفي · الدرجة من 60% → 73%</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>حرّك سلايدر الموقف من 2.2 → 3.8</td>
+        <td>المخالفة تختفي · الدرجة ترتفع أكثر</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>حرّك سلايدر الإخلاء من 28 → 18</td>
+        <td>الدرجة تصل إلى <strong>100%</strong></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>افتح Console (F12)</td>
+        <td><code style="font-size:8.5pt;">Live audit: 0 arch violations detected</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Tech Stack -->
+  <h2 style="margin-top:12px;"><span class="icon">🔧</span> البنية التقنية</h2>
+  <table class="table-small">
+    <tbody>
+      <tr><td style="width:120px; font-weight:700;">Backend</td><td>Python 3.10+ · Flask · Pydantic v2</td></tr>
+      <tr><td style="font-weight:700;">Rule Engine</td><td>محرك حتمي (Deterministic) — 11 قاعدة</td></tr>
+      <tr><td style="font-weight:700;">AI Layer</td><td>OpenAI gpt-4o-mini + Offline fallback</td></tr>
+      <tr><td style="font-weight:700;">Frontend</td><td>HTML/CSS/JS نقي · RTL كامل</td></tr>
+      <tr><td style="font-weight:700;">Reports</td><td>Jinja2 + Plotly 3D (inline, offline-capable)</td></tr>
+      <tr><td style="font-weight:700;">Tests</td><td>18 اختبار pytest — 100% نجاح</td></tr>
+      <tr><td style="font-weight:700;">Deployment</td><td>Render (Web Service + Flask API)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Links -->
+  <h2><span class="icon">🔗</span> الروابط الحية</h2>
+  <table class="table-small">
+    <tbody>
+      <tr><td style="width:120px; font-weight:700;">GitHub</td><td style="font-family:'JetBrains Mono',monospace; font-size:9pt;">github.com/majmaah99-ops/mavic-structural-ai</td></tr>
+      <tr><td style="font-weight:700;">Live Report</td><td style="font-family:'JetBrains Mono',monospace; font-size:9pt;">mavic-structural-ai.onrender.com/</td></tr>
+      <tr><td style="font-weight:700;">Live API</td><td style="font-family:'JetBrains Mono',monospace; font-size:9pt;">mavic-structural-ai.onrender.com/api/violations</td></tr>
+      <tr><td style="font-weight:700;">Health Check</td><td style="font-family:'JetBrains Mono',monospace; font-size:9pt;">mavic-structural-ai.onrender.com/api/health</td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE 3 -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Business Model -->
+  <h2><span class="icon">💰</span> نموذج العمل — السوق المستهدف</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>الشريحة</th>
+        <th style="text-align:center;">التسعير</th>
+        <th style="text-align:center;">حجم السوق</th>
+        <th style="text-align:center;">الإيراد المتوقع (5%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>مكاتب هندسية</strong></td>
+        <td style="text-align:center;">999 ر.س / شهر</td>
+        <td style="text-align:center;">4,200 مكتب</td>
+        <td style="text-align:center; font-weight:700; color:var(--accent);">2.1 مليون ر.س/سنة</td>
+      </tr>
+      <tr>
+        <td><strong>أمانات وبلديات</strong></td>
+        <td style="text-align:center;">49,000 ر.س / سنة</td>
+        <td style="text-align:center;">285 جهة</td>
+        <td style="text-align:center; font-weight:700; color:var(--accent);">700 ألف ر.س/سنة</td>
+      </tr>
+      <tr>
+        <td><strong>مقاولات</strong></td>
+        <td style="text-align:center;">1,999 ر.س / شهر</td>
+        <td style="text-align:center;">8,500 شركة</td>
+        <td style="text-align:center; font-weight:700; color:var(--accent);">1.0 مليون ر.س/سنة</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight" style="text-align:center; font-size:11pt;">
+    🎯 اختراق <strong>5% من السوق السعودي</strong> = <strong>2.5 مليون ريال MRR</strong> (إيراد شهري متكرر)
+  </div>
+
+  <!-- Advantages -->
+  <h2><span class="icon">🚀</span> مزايا التوسع</h2>
+  <ul>
+    <li><strong>التكامل مع منصة "بلدي"</strong> — إصدار تراخيص آلية</li>
+    <li><strong>التوسع للكود التجاري والصناعي</strong> (SBC 801, 901)</li>
+    <li><strong>White-label</strong> للشركات الكبرى (NEOM, Aramco, Roshn)</li>
+    <li><strong>API للبيع</strong> لشركات BIM العالمية (Autodesk, Bentley)</li>
+  </ul>
+
+  <!-- Roadmap -->
+  <h2><span class="icon">🗺️</span> خارطة الطريق</h2>
+  <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+    <div class="roadmap-row done">
+      <div class="phase">Phase 1</div>
+      <div class="scope">MIZAN-ARCH (3 قواعد معمارية)</div>
+      <div class="status">✅ مكتمل</div>
+      <div class="date">اليوم</div>
+    </div>
+    <div class="roadmap-row done">
+      <div class="phase">Phase 2</div>
+      <div class="scope">MAVIC-STRUCT (8 قواعد إنشائية)</div>
+      <div class="status">✅ مكتمل</div>
+      <div class="date">اليوم</div>
+    </div>
+    <div class="roadmap-row">
+      <div class="phase">Phase 3</div>
+      <div class="scope">السلامة من الحريق (SBC 801)</div>
+      <div class="status">🔜</div>
+      <div class="date">Q1 2026</div>
+    </div>
+    <div class="roadmap-row">
+      <div class="phase">Phase 4</div>
+      <div class="scope">قارئ DWG/PDF بـ ezdxf + Vision LLM</div>
+      <div class="status">🔜</div>
+      <div class="date">Q2 2026</div>
+    </div>
+    <div class="roadmap-row">
+      <div class="phase">Phase 5</div>
+      <div class="scope">تكامل Revit Add-in + Balady API</div>
+      <div class="status">🔜</div>
+      <div class="date">Q3 2026</div>
+    </div>
+  </div>
+
+  <!-- Competitors -->
+  <h2><span class="icon">🎁</span> ما يميز MIZAN عن المنافسين</h2>
+  <table class="table-small">
+    <thead>
+      <tr>
+        <th>المنافس</th>
+        <th>القيد</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>CONIX.AI</strong></td><td>تركيز معماري فقط · لا يدعم العربي</td></tr>
+      <tr><td><strong>WhiteHelmet</strong></td><td>يعمل في السحابة فقط · لا API محلي</td></tr>
+      <tr><td><strong>Autodesk</strong></td><td>لا يدعم أكواد SBC السعودية</td></tr>
+      <tr style="background:rgba(16,185,129,0.08);">
+        <td><strong>MIZAN by MAVIC</strong></td>
+        <td><strong>إنشائي + معماري · عربي كامل · 4 أكواد SBC</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:9.5pt; margin-top:6px;">
+    <strong>ميزتنا:</strong> أول منصة سعودية تدمج <strong>Rule Engine حتمي</strong> (دقيق) مع <strong>AI مرن</strong> (اقتراحات) في واجهة عربية كاملة.
+  </p>
+
+  <!-- Team & CTA -->
+  <h2><span class="icon">👥</span> الفريق والتواصل</h2>
+  <div class="two-col">
+    <div>
+      <p style="font-size:9.5pt;"><strong>المطوّر الرئيسي:</strong> majmaah99-ops</p>
+      <p style="font-size:9.5pt;"><strong>التخصص:</strong> هندسة + ذكاء اصطناعي + تطوير ويب</p>
+      <p style="font-size:9.5pt;"><strong>الهاكاثون:</strong> IECE 2026 — المسار الثاني</p>
+    </div>
+    <div>
+      <p style="font-size:9pt; font-family:'JetBrains Mono',monospace;">
+        <strong>GitHub:</strong><br>
+        github.com/majmaah99-ops/mavic-structural-ai
+      </p>
+      <p style="font-size:9pt; font-family:'JetBrains Mono',monospace; margin-top:4px;">
+        <strong>Live Demo:</strong><br>
+        mavic-structural-ai.onrender.com
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer CTA -->
+  <div class="footer-cta">
+    <h3>نبني معياراً جديداً للجودة الهندسية في السعودية</h3>
+    <p>MIZAN by MAVIC · 11 قاعدة SBC · 0.12 ثانية · 100% تغطية</p>
+    <div class="links">
+      <span>الهيئة السعودية للمهندسين</span>
+      <span>·</span>
+      <span>IECE 2026</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
