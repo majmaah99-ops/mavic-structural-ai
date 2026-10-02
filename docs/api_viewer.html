@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>MIZAN API — Violations Viewer</title>
+  <style>
+    body { font-family: 'Tajawal', sans-serif; background: #0f172a; color: #fff; padding: 40px; }
+    .header { max-width: 1200px; margin: 0 auto 30px; }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 20px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
+    .stat-card { background: #1e293b; padding: 20px; border-radius: 12px; border-top: 3px solid #00E676; }
+    .stat-label { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 700; color: #00E676; }
+    .violation { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 12px; border-right: 4px solid #dc2626; }
+    .violation.high { border-right-color: #f59e0b; }
+    .violation.medium { border-right-color: #3b82f6; }
+    .violation-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .rule-badge { background: #dc2626; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .rule-badge.high { background: #f59e0b; color: #000; }
+    .rule-badge.medium { background: #3b82f6; }
+    .element { color: #00E676; font-weight: 600; }
+    .sbc-ref { color: #94a3b8; font-size: 12px; font-family: monospace; }
+    .message { margin: 8px 0; line-height: 1.6; }
+    .message-en { color: #64748b; font-size: 13px; direction: ltr; text-align: left; }
+    .loading { text-align: center; padding: 60px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔍 MIZAN by MAVIC — تقرير المخالفات</h1>
+    <p class="subtitle">عرض مباشر من Live API على Render</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div id="violations-list"><div class="loading">جاري تحميل المخالفات...</div></div>
+
+  <script>
+    async function loadViolations() {
+      try {
+        const res = await fetch('https://mavic-structural-ai.onrender.com/api/violations');
+        const data = await res.json();
+
+        // Stats
+        document.getElementById('stats').innerHTML = `
+          <div class="stat-card"><div class="stat-label">إجمالي المخالفات</div><div class="stat-value">${data.violations_count}</div></div>
+          <div class="stat-card"><div class="stat-label">إنشائية</div><div class="stat-value">${data.struct_count}</div></div>
+          <div class="stat-card"><div class="stat-label">معمارية</div><div class="stat-value">${data.arch_count}</div></div>
+          <div class="stat-card"><div class="stat-label">زمن التدقيق</div><div class="stat-value">${data.elapsed_seconds}s</div></div>
+        `;
+
+        // Violations
+        const archRuleIds = [9, 10, 11];
+        const html = data.violations.map(v => {
+          const isArch = archRuleIds.includes(v.rule_id);
+          const severity = v.severity.toLowerCase();
+          return `
+            <div class="violation ${severity}">
+              <div class="violation-header">
+                <span class="rule-badge ${severity}">R${v.rule_id} · ${isArch ? 'معماري' : 'إنشائي'}</span>
+                <span class="sbc-ref">${v.sbc_reference}</span>
+              </div>
+              <div class="message">
+                <span class="element">${v.element_type} ${v.element_id}</span>
+                — ${v.message_ar}
+              </div>
+              <div class="message-en">${v.message_en}</div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('violations-list').innerHTML = html;
+      } catch (err) {
+        document.getElementById('violations-list').innerHTML = `
+          <div class="loading">⚠️ تعذر الاتصال بالـ API. تأكد من أن الخدمة تعمل.</div>
+        `;
+      }
+    }
+
+    loadViolations();
+  </script>
+</body>
+</html>
